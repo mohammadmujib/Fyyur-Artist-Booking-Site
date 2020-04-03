@@ -574,7 +574,6 @@ def shows():
     data =[]
     for show in shows:
         artist = db.session.query(Artist.name, Artist.image_link).filter(Artist.id == show[0]).one()
-        
         venue = db.session.query(Venue.name).filter(Venue.id == show[1]).one()
 
         data.append({
