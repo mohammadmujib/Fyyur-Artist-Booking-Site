@@ -3,8 +3,6 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, SubmitField, IntegerField
 from wtforms.validators import ValidationError, DataRequired, AnyOf, URL, Length, NumberRange, Optional
 from enum import Enum
-# from models import Artist, Venue, Show
-
 
 class ShowForm(FlaskForm):
     artist_id = IntegerField(
