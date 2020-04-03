@@ -8,5 +8,5 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 DEBUG = True
 
 # Connect to the database
-SQLALCHEMY_DATABASE_URI = 'postgres://postgres:1234@localhost:5432/fyur'
+SQLALCHEMY_DATABASE_URI = 'postgres://postgres:1234@localhost:5432/fyurr'
 SQLALCHEMY_TRACK_MODIFICATIONS = True
