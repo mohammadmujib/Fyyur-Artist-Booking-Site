@@ -570,19 +570,21 @@ def shows():
     """
     Returns shows.html and lists all shows in the database
     """
-    upcoming_shows = Show.query.filter(
-        Show.start_time >= datetime.datetime.now()).all()
+    shows = db.session.query(Show.artist_id, Show.venue_id, Show.start_time).all()
+    data =[]
+    for show in shows:
+        artist = db.session.query(Artist.name, Artist.image_link).filter(Artist.id == show[0]).one()
+        
+        venue = db.session.query(Venue.name).filter(Venue.id == show[1]).one()
 
-    data = []
-    for show in upcoming_shows:
-        this_show = {}
-        this_show["venue_id"] = show.venue_id
-        this_show["venue_name"] = show.venue.name
-        this_show["artist_id"] = show.artist_id
-        this_show["artist_name"] = show.artist.name
-        this_show["artist_image_link"] = show.artist.image_link
-        this_show["start_time"] = str(show.start_time)
-        data.append(this_show)
+        data.append({
+            "artist_id": show[0],
+            "artist_name": artist[0],
+            "artist_image_link":artist[1],
+            "venue_id": show[1],
+            "venue_name":venue[0],
+            "start_time":str(show[2])
+        })
 
     return render_template('pages/shows.html', shows=data)
 
