@@ -39,8 +39,8 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 
 
-class venue(db.Model):
-    __tablename__ = 'Venue'
+class Venue(db.Model):
+    __tablename__ = 'venue'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), unique=True, nullable=False)
@@ -56,11 +56,11 @@ class venue(db.Model):
     seeking_description = db.Column(db.String(500), nullable=True)
     date_added = db.Column(db.DateTime, nullable=True)
 
-    venue_shows = db.relationship('Show', back_populates='venue', lazy=True)
+    venue_shows = db.relationship('show', back_populates='venue', lazy=True)
 
 
-class artist(db.Model):
-    __tablename__ = 'Artist'
+class Artist(db.Model):
+    __tablename__ = 'artist'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True, nullable=False)
@@ -79,8 +79,8 @@ class artist(db.Model):
     artist_shows = db.relationship('Show', back_populates='artist', lazy=True)
 
 
-class show(db.Model):
-    __tablename__ = 'Show'
+class Show(db.Model):
+    __tablename__ = 'show'
 
     id = db.Column(db.Integer, primary_key=True)
     venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
@@ -89,8 +89,8 @@ class show(db.Model):
 
     start_time = db.Column(db.DateTime, nullable=False)
 
-    venue = db.relationship('Venue', back_populates='venue_shows')
-    artist = db.relationship('Artist', back_populates='artist_shows')
+    venue = db.relationship('venue', back_populates='venue_shows')
+    artist = db.relationship('artist', back_populates='artist_shows')
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
