@@ -76,16 +76,16 @@ class Artist(db.Model):
     date_added = db.Column(db.DateTime, nullable=False)
     available_hours = db.Column(db.String(5), nullable=True)
 
-    artist_shows = db.relationship('Show', back_populates='artist', lazy=True)
+    artist_shows = db.relationship('show', back_populates='artist', lazy=True)
 
 
 class Show(db.Model):
     __tablename__ = 'show'
 
     id = db.Column(db.Integer, primary_key=True)
-    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
+    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable=False)
     artist_id = db.Column(db.Integer, db.ForeignKey(
-        'Artist.id'), nullable=False)
+        'artist.id'), nullable=False)
 
     start_time = db.Column(db.DateTime, nullable=False)
 
