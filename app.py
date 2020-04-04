@@ -39,7 +39,7 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 
 
-class Venue(db.Model):
+class venue(db.Model):
     __tablename__ = 'Venue'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -59,7 +59,7 @@ class Venue(db.Model):
     venue_shows = db.relationship('Show', back_populates='venue', lazy=True)
 
 
-class Artist(db.Model):
+class artist(db.Model):
     __tablename__ = 'Artist'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -79,7 +79,7 @@ class Artist(db.Model):
     artist_shows = db.relationship('Show', back_populates='artist', lazy=True)
 
 
-class Show(db.Model):
+class show(db.Model):
     __tablename__ = 'Show'
 
     id = db.Column(db.Integer, primary_key=True)
