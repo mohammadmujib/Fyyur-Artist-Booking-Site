@@ -56,7 +56,7 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String(500), nullable=True)
     date_added = db.Column(db.DateTime, nullable=True)
 
-    venue_shows = db.relationship('show', back_populates='venue', lazy=True)
+    venue_shows = db.relationship('Show', back_populates='venue', lazy=True)
 
 
 class Artist(db.Model):
@@ -76,7 +76,7 @@ class Artist(db.Model):
     date_added = db.Column(db.DateTime, nullable=False)
     available_hours = db.Column(db.String(5), nullable=True)
 
-    artist_shows = db.relationship('show', back_populates='artist', lazy=True)
+    artist_shows = db.relationship('Show', back_populates='artist', lazy=True)
 
 
 class Show(db.Model):
@@ -89,8 +89,8 @@ class Show(db.Model):
 
     start_time = db.Column(db.DateTime, nullable=False)
 
-    venue = db.relationship('venue', back_populates='venue_shows')
-    artist = db.relationship('artist', back_populates='artist_shows')
+    venue = db.relationship('Venue', back_populates='venue_shows')
+    artist = db.relationship('Artist', back_populates='artist_shows')
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
