@@ -129,8 +129,7 @@ def venues():
     """
       Returns the georgrphical areas for which we have Venues
     """
-    areas = Venue.query.with_entities(
-        Venue.city, Venue.state).group_by(Venue.state, Venue.city)
+    areas = Venue.query.distinct('city','state').all()
 
     data = []
     for area in areas:
@@ -138,7 +137,9 @@ def venues():
         venues = Venue.query.with_entities(Venue.id, Venue.name).filter_by(
             city=area.city, state=area.state)
         for venue in venues:
-            upcoming_shows = Show.query.filter_by(venue_id=venue.id).count()
+            upcoming_shows = Show.query.filter(
+                            Show.venue_id == venue.id,
+                            Show.start_time > datetime.datetime.now()).count()
             venues_in_this_area.append({
                 "id": venue.id,
                 "name": venue.name,
@@ -191,6 +192,7 @@ def show_venue(venue_id):
     """
     venue = Venue.query.filter_by(id=venue_id).first()
     venue_shows = Show.query.filter_by(venue_id=venue_id).all()
+
     past_shows_list = []
     upcoming_shows_list = []
 
