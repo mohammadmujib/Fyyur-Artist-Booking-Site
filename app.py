@@ -114,9 +114,9 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
-    recent_artists = Artist.query.filter(artist.date_added is not None).order_by(
+    recent_artists = Artist.query.filter(Artist.date_added is not None).order_by(
         Artist.date_added.desc()).limit(10).all()
-    recent_venues = Venue.query.filter(venue.date_added is not None).order_by(
+    recent_venues = Venue.query.filter(Venue.date_added is not None).order_by(
         Venue.date_added.desc()).limit(10).all()
     return render_template('pages/home.html', recent_artists=recent_artists, recent_venues=recent_venues)
 
@@ -129,6 +129,7 @@ def venues():
     """
       Returns the georgrphical areas for which we have Venues
     """
+    # used "distinct" query and get all the distinct pairs of (State, City)
     areas = Venue.query.distinct('city','state').all()
 
     data = []
@@ -170,7 +171,9 @@ def search_venues():
     match_array = []
     for venue in venues:
         count += 1
-        num_upcoming_shows = Show.query.filter_by(venue_id=venue.id).count()
+        num_upcoming_shows = Show.query.filter(
+                        Show.venue_id == venue.id,
+                        Show.start_time > datetime.datetime.now()).count()
         match_array.append({
             "id": venue.id,
             "name": venue.name,
@@ -202,7 +205,7 @@ def show_venue(venue_id):
             "artist_name": show.artist.name,
             "artist_image_link": show.artist.image_link,
             "start_time": show.start_time.strftime("%d-%m-%Y %H:%M:%S")
-        }
+        } #calculate no of upcoming shows list
         if show.start_time > datetime.datetime.now():
             upcoming_shows_list.append(this_show)
         else:
