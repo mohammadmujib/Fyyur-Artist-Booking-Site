@@ -114,9 +114,9 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
-    recent_artists = Artist.query.filter(Artist.date_added is not None).order_by(
+    recent_artists = Artist.query.filter(artist.date_added is not None).order_by(
         Artist.date_added.desc()).limit(10).all()
-    recent_venues = Venue.query.filter(Venue.date_added is not None).order_by(
+    recent_venues = Venue.query.filter(venue.date_added is not None).order_by(
         Venue.date_added.desc()).limit(10).all()
     return render_template('pages/home.html', recent_artists=recent_artists, recent_venues=recent_venues)
 
@@ -190,7 +190,21 @@ def show_venue(venue_id):
     where the venue ID is supplied as a GET request parameter
     """
     venue = Venue.query.filter_by(id=venue_id).first()
-    venue_shows = venue.venue_shows
+    venue_shows = Show.query.filter_by(venue_id=venue_id).all()
+    past_shows_list = []
+    upcoming_shows_list = []
+
+    for show in venue_shows:
+        this_show = {
+            "artist_id": show.artist_id,
+            "artist_name": show.artist.name,
+            "artist_image_link": show.artist.image_link,
+            "start_time": show.start_time.strftime("%d-%m-%Y %H:%M:%S")
+        }
+        if show.start_time > datetime.datetime.now():
+            upcoming_shows_list.append(this_show)
+        else:
+            past_shows_list.append(this_show)
 
     data = {
         'id': venue.id,
@@ -203,29 +217,14 @@ def show_venue(venue_id):
         'facebook_link': venue.facebook_link,
         'seeking_talent': venue.seeking_talent,
         'seeking_description': venue.seeking_description,
-        'image_link': venue.image_link
+        'image_link': venue.image_link,
+        'past_shows': past_shows_list,
+        'upcoming_shows': upcoming_shows_list,
+        'past_shows_count': len(past_shows_list),
+        'upcoming_shows_count': len(upcoming_shows_list),
     }
 
-    past_shows_list = []
-    upcoming_shows_list = []
-    for show in venue_shows:
-        show_artist = Artist.query.with_entities(
-            Artist.name, Artist.image_link).filter_by(id=show.artist_id).first()
-        this_show = {
-            'artist_id': show.artist_id,
-            'start_time': str(show.start_time)
-        }
-        this_show['artist_name'] = show_artist.name
-        this_show['artist_image_link'] = show_artist.image_link
-        if show.start_time < datetime.datetime.now():
-            past_shows_list.append(this_show)
-        else:
-            upcoming_shows_list.append(this_show)
 
-    data['past_shows'] = past_shows_list
-    data['upcoming_shows'] = upcoming_shows_list
-    data['past_shows_count'] = len(past_shows_list)
-    data['upcoming_shows_count'] = len(upcoming_shows_list)
 
     return render_template('pages/show_venue.html', venue=data)
 

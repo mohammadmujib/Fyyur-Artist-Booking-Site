@@ -54,6 +54,7 @@ def upgrade():
     sa.UniqueConstraint('address'),
     sa.UniqueConstraint('name'),
     sa.UniqueConstraint('phone')
+
     )
     op.create_table('show',
     sa.Column('id', sa.Integer(), nullable=False),
