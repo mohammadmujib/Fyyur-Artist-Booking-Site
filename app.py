@@ -131,21 +131,27 @@ def venues():
     """
     # used "distinct" query and get all the distinct pairs of (State, City)
     areas = Venue.query.distinct('city','state').all()
-
     data = []
     for area in areas:
         venues_in_this_area = []
-        venues = Venue.query.with_entities(Venue.id, Venue.name).filter_by(
-            city=area.city, state=area.state)
-        for venue in venues:
-            upcoming_shows = Show.query.filter(
-                            Show.venue_id == venue.id,
-                            Show.start_time > datetime.datetime.now()).count()
+        shows = db.session.query(Show).join(Venue).filter(
+            Venue.city == area.city, Venue.state == area.state).all()
+
+        if(len(shows) > 0):
+            num_upcoming_shows = 0
+            venues_in_this_area = []
+            for show in shows:
+                # calculate number of upcoming shows
+                if show.start_time > datetime.datetime.now():
+                    num_upcoming_shows += 1
+
             venues_in_this_area.append({
-                "id": venue.id,
-                "name": venue.name,
-                "num_upcoming_shows": upcoming_shows
+                'id': show.venue.id,
+                'name': show.venue.name,
+                'num_upcoming_shows': num_upcoming_shows
             })
+        else:
+            venues_in_this_area = []
 
         data.append({
             "city": area.city,
@@ -205,7 +211,7 @@ def show_venue(venue_id):
             "artist_name": show.artist.name,
             "artist_image_link": show.artist.image_link,
             "start_time": show.start_time.strftime("%d-%m-%Y %H:%M:%S")
-        } #calculate no of upcoming shows list
+        } #calculate no of upcoming shows_list
         if show.start_time > datetime.datetime.now():
             upcoming_shows_list.append(this_show)
         else:
@@ -246,7 +252,7 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
     """
-      Creates a database entry for a new Venue, the details of which are POSTed
+      Creates a database entry for a new Venue, the details of which are Posted
     """
     form = VenueForm()
     if form.validate():
@@ -574,19 +580,19 @@ def shows():
     """
     Returns shows.html and lists all shows in the database
     """
-    shows = db.session.query(Show.artist_id, Show.venue_id, Show.start_time).all()
+    shows = Show.query.join(Venue,Show.venue_id == Venue.id).join(Artist,Show.artist_id == Artist.id).all()
+    #shows = db.session.query(Show.artist_id, Show.venue_id, Show.start_time).all()
     data =[]
     for show in shows:
-        artist = db.session.query(Artist.name, Artist.image_link).filter(Artist.id == show[0]).one()
-        venue = db.session.query(Venue.name).filter(Venue.id == show[1]).one()
-
+        #artist = db.session.query(Artist.name, Artist.image_link).filter(Artist.id == show[0]).one()
+        #venue = db.session.query(Venue.name).filter(Venue.id == show[1]).one()
         data.append({
-            "artist_id": show[0],
-            "artist_name": artist[0],
-            "artist_image_link":artist[1],
-            "venue_id": show[1],
-            "venue_name":venue[0],
-            "start_time":str(show[2])
+            "artist_id": show.artist_id,
+            "artist_name": show.artist.name,
+            "artist_image_link":show.artist.image_link,
+            "venue_id": show.venue_id,
+            "venue_name":show.venue.name,
+            "start_time":str(show.start_time)
         })
 
     return render_template('pages/shows.html', shows=data)
