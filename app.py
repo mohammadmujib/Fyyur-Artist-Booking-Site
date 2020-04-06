@@ -134,25 +134,16 @@ def venues():
     data = []
     for area in areas:
         venues_in_this_area = []
-        shows = db.session.query(Show).join(Venue).filter(
-            Venue.city == area.city, Venue.state == area.state).all()
-
-        if(len(shows) > 0):
-            num_upcoming_shows = 0
-            venues_in_this_area = []
-            for show in shows:
-                # calculate number of upcoming shows
-                if show.start_time > datetime.datetime.now():
-                    num_upcoming_shows += 1
-
+        venues = Venue.query.with_entities(Venue.id, Venue.name).filter_by(
+            city=area.city, state=area.state)
+        for venue in venues:
+            upcoming_shows = Show.query.filter_by(venue_id=venue.id).count()
+            print(upcoming_shows)
             venues_in_this_area.append({
-                'id': show.venue.id,
-                'name': show.venue.name,
-                'num_upcoming_shows': num_upcoming_shows
+                "id": venue.id,
+                "name": venue.name,
+                "num_upcoming_shows": upcoming_shows
             })
-        else:
-            venues_in_this_area = []
-
         data.append({
             "city": area.city,
             "state": area.state,
@@ -177,9 +168,10 @@ def search_venues():
     match_array = []
     for venue in venues:
         count += 1
-        num_upcoming_shows = Show.query.filter(
-                        Show.venue_id == venue.id,
+        num_upcoming_shows = db.session.query(Show).join(Venue).filter(
+                        Show.venue_id == venue.id).filter(
                         Show.start_time > datetime.datetime.now()).count()
+
         match_array.append({
             "id": venue.id,
             "name": venue.name,
@@ -189,6 +181,7 @@ def search_venues():
         "count": count,
         "data": match_array
     }
+
 
     return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
@@ -200,21 +193,23 @@ def show_venue(venue_id):
     where the venue ID is supplied as a GET request parameter
     """
     venue = Venue.query.filter_by(id=venue_id).first()
-    venue_shows = Show.query.filter_by(venue_id=venue_id).all()
-
-    past_shows_list = []
     upcoming_shows_list = []
-
-    for show in venue_shows:
+    past_shows_list = []
+    shows = db.session.query(Show).join(Artist).filter(Show.venue_id==venue_id).all()
+    for show in shows:
+        print(show.artist_id)
         this_show = {
             "artist_id": show.artist_id,
             "artist_name": show.artist.name,
             "artist_image_link": show.artist.image_link,
             "start_time": show.start_time.strftime("%d-%m-%Y %H:%M:%S")
-        } #calculate no of upcoming shows_list
+        }
+
+        #calculate no of upcoming shows_list
         if show.start_time > datetime.datetime.now():
             upcoming_shows_list.append(this_show)
         else:
+            #calculate past Show list
             past_shows_list.append(this_show)
 
     data = {
@@ -296,11 +291,9 @@ def delete_venue(venue_id):
     Delete from the database the given, the ID is passed as a GET parameter
     """
     try:
-        db.session.execute(
-            "DELETE FROM \"Venue\" WHERE id=:param",
-            {"param": venue_id}
-        )
+        db.session.query(Venue).filter(Venue.id == venue_id).delete()
         db.session.commit()
+        flash('Venue was deleted')
     except Exception as e:
         flash("Error deleting venue: " + str(e))
     finally:
@@ -315,8 +308,9 @@ def delete_venue(venue_id):
 def artists():
     """
     GET request for all Artists in the database
+    using distict
     """
-    artists = Artist.query.with_entities(Artist.id, Artist.name)
+    artists = Artist.query.distinct('id','name').all()
 
     return render_template('pages/artists.html', artists=artists)
 
@@ -334,7 +328,9 @@ def search_artists():
     match_array = []
     for artist in artists:
         count += 1
-        num_upcoming_shows = Show.query.filter_by(artist_id=artist.id).count()
+        num_upcoming_shows = db.session.query(Show).join(Artist).filter(
+                        Show.artist_id == artist.id).filter(
+                        Show.start_time > datetime.datetime.now()).count()
         match_array.append({
             "id": artist.id,
             "name": artist.name,
