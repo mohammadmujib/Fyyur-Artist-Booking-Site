@@ -352,42 +352,45 @@ def show_artist(artist_id):
     """
 
     artist = Artist.query.filter_by(id=artist_id).first()
-    artist_shows = artist.artist_shows
 
-    data = {
-        'id': artist.id,
-        'name': artist.name,
-        'genres': artist.genres.replace("{", "").replace("}", "").split(","),
-        'city': artist.city,
-        'state': artist.state,
-        'phone': artist.phone,
-        'website_link': artist.website_link,
-        'facebook_link': artist.facebook_link,
-        'seeking_venue': artist.seeking_venue,
-        'seeking_description': artist.seeking_description,
-        'image_link': artist.image_link
-    }
+
 
     past_shows_list = []
     upcoming_shows_list = []
-    for show in artist_shows:
-        show_venue = Venue.query.with_entities(
-            Venue.name, Venue.image_link).filter_by(id=show.venue_id).first()
+    shows = db.session.query(Show).join(Artist).filter(Show.artist_id==artist_id).all()
+    for show in shows:
+        
         this_show = {
-            'venue_id': show.venue_id,
-            'start_time': str(show.start_time)
+            "venue_id": show.venue_id,
+            "venue_name": show.venue.name,
+            "venue_image_link": show.venue.image_link,
+            "start_time": show.start_time.strftime("%d-%m-%Y %H:%M:%S")
         }
-        this_show['venue_name'] = show_venue.name
-        this_show['venue_image_link'] = show_venue.image_link
-        if show.start_time < datetime.datetime.now():
-            past_shows_list.append(this_show)
-        else:
-            upcoming_shows_list.append(this_show)
 
-    data['past_shows'] = past_shows_list
-    data['upcoming_shows'] = upcoming_shows_list
-    data['past_shows_count'] = len(past_shows_list)
-    data['upcoming_shows_count'] = len(upcoming_shows_list)
+        #calculate no of upcoming shows_list
+        if show.start_time > datetime.datetime.now():
+            upcoming_shows_list.append(this_show)
+        else:
+            #calculate past Show list
+            past_shows_list.append(this_show)
+
+        data = {
+            'id': artist.id,
+            'name': artist.name,
+            'genres': artist.genres.replace("{", "").replace("}", "").split(","),
+            'city': artist.city,
+            'state': artist.state,
+            'phone': artist.phone,
+            'website_link': artist.website_link,
+            'facebook_link': artist.facebook_link,
+            'seeking_venue': artist.seeking_venue,
+            'seeking_description': artist.seeking_description,
+            'image_link': artist.image_link,
+            'past_shows': past_shows_list,
+            'upcoming_shows': upcoming_shows_list,
+            'past_shows_count': len(past_shows_list),
+            'upcoming_shows_count': len(upcoming_shows_list),
+        }
 
     return render_template('pages/show_artist.html', artist=data)
 
