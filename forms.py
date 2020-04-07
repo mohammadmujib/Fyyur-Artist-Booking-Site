@@ -183,29 +183,5 @@ class ArtistForm(FlaskForm):
     facebook_link = StringField(
         'facebook_link', validators=[Optional(), URL()]
     )
-    available_hours = StringField(
-        'available_hours', validators=[Optional(), Length(min=5, max=5)]
-    )
-
-    def validate_available_hours(self, available_hours):
-        available_hours_parts = available_hours.data.split('-')
-        try:
-            from_hour = int(available_hours_parts[0])
-        except Exception:
-            raise ValidationError("Invalid format for available hours.")
-
-        try:
-            to_hour = int(available_hours_parts[1])
-        except Exception:
-            raise ValidationError("Invalid format for available hours.")
-
-        try:
-            from_hour = int(available_hours_parts[0])
-            to_hour = int(available_hours_parts[1])
-
-            if to_hour <= from_hour:
-                raise ValidationError("Invalid format for available hours.")
-        except Exception:
-            raise ValidationError("Invalid format for available hours.")
 
 # TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
